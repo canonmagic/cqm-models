@@ -4,6 +4,7 @@ module QDM
     include Mongoid::Document
     embedded_in :patient
     embedded_in :measure
+    embeds_many :dataElementAttributes
 
     # Codes that describe this datatype.
     field :dataElementCodes, type: Array, default: []
@@ -16,6 +17,10 @@ module QDM
 
     field :id, type: String
 
+    field :encounter_id, type: BSON::ObjectId
+
+    field :denormalize_as_datetime, type: Boolean
+    
     def initialize(options = {})
       # class is reserved word. changed to clazz
       if options['class']
@@ -185,5 +190,11 @@ module QDM
         end
       end
     end
+  end
+  
+  class DataElementAttribute
+    include Mongoid::Document
+    field :attribute_valueset, type: String
+    field :attribute_name, type: String
   end
 end
