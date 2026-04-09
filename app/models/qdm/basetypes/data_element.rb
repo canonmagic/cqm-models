@@ -20,7 +20,7 @@ module QDM
     field :encounter_id, type: BSON::ObjectId
 
     field :denormalize_as_datetime, type: Boolean
-    
+
     def initialize(options = {})
       # class is reserved word. changed to clazz
       if options['class']
@@ -70,22 +70,20 @@ module QDM
     def shift_dates(seconds)
       fields.keys.each do |field|
         send(field + '=', (send(field).to_time + seconds.seconds).to_datetime) if send(field).is_a? DateTime
+        send(field + '=', (send(field).to_time + seconds.seconds).to_datetime) if send(field).is_a? Time
         send(field + '=', send(field).shift_dates(seconds)) if (send(field).is_a? Interval) || (send(field).is_a? DataElement)
 
-        if field == 'result'
-          result = send(field)
-          unless result.nil? || (!result.is_a? Time)
-            send(field + '=', (result.to_time + seconds.seconds).to_datetime)
-          end
         # Special case for facility locations
-        elsif field == 'facilityLocations'
+        if field == 'facilityLocations'
           send(field).each do |facility_location|
             shift_facility_location_dates(facility_location, seconds)
           end
         elsif field == 'facilityLocation'
           facility_location = send(field)
           unless facility_location.nil?
-            shift_facility_location_dates(facility_location, seconds)
+            # Guessing something changed in mongoid such that facility_location gets typed to an Object
+            # but this method (I think) expects a Hash.
+            shift_facility_location_dates(facility_location.attributes, seconds)
             send(field + '=', facility_location)
           end
         end
@@ -191,7 +189,7 @@ module QDM
       end
     end
   end
-  
+
   class DataElementAttribute
     include Mongoid::Document
     field :attribute_valueset, type: String

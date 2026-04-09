@@ -99,6 +99,3 @@ require_relative 'qdm/medication_order'
 require_relative 'qdm/substance_recommended'
 require_relative 'qdm/intervention_recommended'
 require_relative 'qdm/physical_exam_performed'
-
-#retired models
-require_relative 'qdm/retired/device_applied'
